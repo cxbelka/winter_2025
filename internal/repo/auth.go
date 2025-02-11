@@ -7,6 +7,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+type auth struct {
+	db *pgx.Conn
+}
+
 func NewAuth(db *pgx.Conn) *auth {
 	return &auth{db: db}
 }
