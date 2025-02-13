@@ -55,7 +55,6 @@ func New() (*app, error) {
 	a.mux = handlers.New(
 		usecase.NewAuth(repo.NewAuth(a.dbConn)),
 		usecase.NewAccountant(
-			repo.NewTransactionManager(a.dbConn),
 			repo.NewBalance(a.dbConn),
 			repo.NewP2p(a.dbConn),
 			repo.NewShop(a.dbConn),

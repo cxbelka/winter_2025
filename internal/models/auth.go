@@ -1,10 +1,10 @@
 package models
 
 type AuthReqest struct {
-	username string
-	password string
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type AuthResponse struct {
-	token string
+	Token string `json:"token"`
 }

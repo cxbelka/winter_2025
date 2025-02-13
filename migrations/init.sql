@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS merch_shop;
 CREATE TABLE IF NOT EXISTS merch_shop.auth (
     login text PRIMARY KEY,
     password bytea NOT NULL,
-    balance integer CONSTRAINT positive_balance CHECK (balance > 0),
+    balance integer CONSTRAINT positive_balance CHECK (balance >= 0),
     created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at timestamp DEFAULT NULL
 );

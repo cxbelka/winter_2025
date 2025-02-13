@@ -1,9 +1,8 @@
 package config
 
 type Config struct {
-	DB        *DBcfg   `envconfig:"DATABASE"`
-	HTTP      *HTTPcfg `envconfig:"SERVER"`
-	JWTSecret string   `envconfig:"JWT_SECRET"`
+	DB   *DBcfg   `envconfig:"DATABASE"`
+	HTTP *HTTPcfg `envconfig:"SERVER"`
 }
 
 type DBcfg struct {

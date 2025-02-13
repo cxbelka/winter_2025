@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/cxbelka/winter_2025/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -16,9 +17,13 @@ func NewBalance(db *pgx.Conn) *balance {
 }
 
 func (b *balance) GetBalance(ctx context.Context, name string) (int, error) {
-	return 0, errors.New("Unimplemented")
-}
-
-func (b *balance) UpdateBalance(ctx context.Context, name string, amount int) error {
-	return errors.New("Unimplemented")
+	var amount int
+	err := b.db.QueryRow(ctx, `SELECT balance FROM merch_shop.auth WHERE login = $1`, name).Scan(&amount)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, models.ErrNoRows
+		}
+		return 0, errors.Join(models.ErrGeneric, err)
+	}
+	return amount, nil
 }
