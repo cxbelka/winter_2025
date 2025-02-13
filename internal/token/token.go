@@ -20,6 +20,10 @@ type JWT struct {
 }
 
 func init() {
+	Reinit()
+}
+
+func Reinit() {
 	jwtCfg = &JWT{}
 	var err error
 	jwtCfg.secret = os.Getenv("JWT_SECRET")
@@ -27,6 +31,7 @@ func init() {
 	if err != nil {
 		jwtCfg.ttl = 10 * time.Minute
 	}
+
 }
 
 func Create(user string) (string, error) {

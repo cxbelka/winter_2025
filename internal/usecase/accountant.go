@@ -1,5 +1,7 @@
 package usecase
 
+//go:generate mockgen -package usecase -source=accountant.go -destination=accountant_mocks.go *
+
 import (
 	"context"
 	"errors"

@@ -1,5 +1,7 @@
 package usecase
 
+//go:generate mockgen -package usecase -source=auth.go -destination=auth_mocks.go *
+
 import (
 	"context"
 	"crypto/sha512"

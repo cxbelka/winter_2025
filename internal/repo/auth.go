@@ -25,7 +25,7 @@ func (a *auth) CheckLogin(ctx context.Context, login string) ([]byte, error) {
 		}
 		return nil, errors.Join(models.ErrGeneric, err)
 	}
-	return passwd /*?????*/, nil
+	return passwd, nil
 }
 
 func (a *auth) CreateUser(ctx context.Context, login string, pass string) error {
