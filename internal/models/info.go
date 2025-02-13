@@ -1,14 +1,15 @@
 package models
 
 type InfoResponse struct {
-	Balance   int             `json:"coins"`
-	Inventory []InventoryItem `json:"inventory"`
-	Transfers struct {
-		Received []ReceivedTransfer `json:"received"`
-		Sent     []SentTransfer     `json:"sent"`
-	} `json:"coinHistory"`
+	Balance   int                   `json:"coins"`
+	Inventory []InventoryItem       `json:"inventory"`
+	Transfers InfoResponseTransfers `json:"coinHistory"`
 }
 
+type InfoResponseTransfers struct {
+	Received []ReceivedTransfer `json:"received"`
+	Sent     []SentTransfer     `json:"sent"`
+}
 type InventoryItem struct {
 	Type string `json:"type"`
 	Qty  int    `json:"quantity"`

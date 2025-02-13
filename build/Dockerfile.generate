@@ -1,0 +1,7 @@
+FROM golang:1.23
+
+WORKDIR /app
+
+RUN go install go.uber.org/mock/mockgen@latest
+
+RUN mkdir /.cache && chmod 777 /.cache

@@ -1,5 +1,7 @@
 package handlers
 
+//go:generate mockgen -package handlers -source=handlers.go -destination=handler_mocks.go *
+
 import (
 	"context"
 	"net/http"

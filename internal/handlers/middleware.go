@@ -10,8 +10,8 @@ import (
 
 func (h *handle) authMiddleware(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tokn := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 		// достать header, раскодировать, проверить
+		tokn := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 		if name, err := token.Check(tokn); err != nil {
 			handleError(w, models.ErrInvalidPassword)
 			return

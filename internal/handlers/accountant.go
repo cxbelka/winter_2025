@@ -34,6 +34,7 @@ func (h *handle) handleInfo(w http.ResponseWriter, r *http.Request) {
 	info, err := h.acc.Info(r.Context(), user)
 	if err != nil {
 		handleError(w, err)
+		return
 	}
 	if err := json.NewEncoder(w).Encode(info); err != nil {
 		handleError(w, err)
