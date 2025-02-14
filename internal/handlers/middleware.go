@@ -47,17 +47,19 @@ func (h *handle) loggerMiddleware(f http.HandlerFunc) http.HandlerFunc {
 
 		wrap := &wrapper{ResponseWriter: w, ResponStatus: http.StatusOK}
 
-		defer func() {
-			if e := recover(); e != nil {
-				// log
-				handleError(w, models.ErrGeneric)
-			}
-		}()
-
 		lctx := h.lg.With().
 			Str("method", r.Method).
 			Str("path", r.URL.String()).
 			Str("id", uuid.NewString())
+
+		defer func() {
+			if e := recover(); e != nil {
+				l := lctx.Logger()
+				(&l).Error().Any("panic", e).Send()
+
+				handleError(w, models.ErrGeneric)
+			}
+		}()
 
 		ctx := lctx.Logger().WithContext(r.Context())
 		f(wrap, r.WithContext(ctx))

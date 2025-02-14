@@ -101,6 +101,12 @@ func Test_logMdw(t *testing.T) {
 			},
 			log: []string{`"level":"error"`, `"key":"value"`},
 		},
+		"panic": {
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				panic("test")
+			},
+			log: []string{`"panic":"test"`},
+		},
 	}
 
 	for name, tc := range testCases {
@@ -118,7 +124,9 @@ func Test_logMdw(t *testing.T) {
 			f(resp, rq)
 
 			for i := range tc.log {
-				require.Equal(t, true, strings.Contains(buf.String(), tc.log[i]))
+				if !strings.Contains(buf.String(), tc.log[i]) {
+					t.Errorf("log does not contains `%s`\nlog: `%s`\n", tc.log[i], buf.String())
+				}
 			}
 
 		})

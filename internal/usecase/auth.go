@@ -8,6 +8,7 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/cxbelka/winter_2025/internal/logger"
 	"github.com/cxbelka/winter_2025/internal/models"
 	"github.com/cxbelka/winter_2025/internal/token"
 )
@@ -28,10 +29,12 @@ func NewAuth(repo authRepo) *auth {
 func (a *auth) Authorize(ctx context.Context, rq *models.AuthReqest) (resp *models.AuthResponse, err error) {
 	passHash, err := a.repo.CheckLogin(ctx, rq.Username)
 	if err != nil && !errors.Is(err, models.ErrNoRows) {
+		logger.AddError(ctx, err)
 		return nil, err
 	}
 	if errors.Is(err, models.ErrNoRows) {
 		if err := a.repo.CreateUser(ctx, rq.Username, rq.Password); err != nil {
+			logger.AddError(ctx, err)
 			return nil, err
 		}
 	} else {
@@ -39,12 +42,14 @@ func (a *auth) Authorize(ctx context.Context, rq *models.AuthReqest) (resp *mode
 		hash.Write([]byte(rq.Password))
 
 		if !slices.Equal(passHash, hash.Sum(nil)) {
+			logger.AddError(ctx, models.ErrInvalidPassword)
 			return nil, models.ErrInvalidPassword
 		}
 	}
 	resp = &models.AuthResponse{}
 	resp.Token, err = token.Create(rq.Username)
 	if err != nil {
+		logger.AddError(ctx, err)
 		err = errors.Join(err, models.ErrGeneric)
 	}
 

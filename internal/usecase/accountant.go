@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/cxbelka/winter_2025/internal/logger"
 	"github.com/cxbelka/winter_2025/internal/models"
 )
 
@@ -40,6 +41,7 @@ func NewAccountant(
 
 func (acc *accountant) Buy(ctx context.Context, user string, item string) error {
 	if err := acc.shop.BuyItem(ctx, user, item); err != nil {
+		logger.AddError(ctx, err)
 		return errors.Join(models.ErrGeneric, err)
 	}
 
@@ -48,6 +50,7 @@ func (acc *accountant) Buy(ctx context.Context, user string, item string) error 
 
 func (acc *accountant) Transfer(ctx context.Context, from string, to string, amount int) error {
 	if err := acc.p2p.Transfer(ctx, from, to, amount); err != nil {
+		logger.AddError(ctx, err)
 		return errors.Join(models.ErrGeneric, err)
 	}
 	return nil
@@ -56,15 +59,19 @@ func (acc *accountant) Transfer(ctx context.Context, from string, to string, amo
 func (acc *accountant) Info(ctx context.Context, user string) (info *models.InfoResponse, err error) {
 	info = &models.InfoResponse{}
 	if info.Balance, err = acc.balance.GetBalance(ctx, user); err != nil {
+		logger.AddError(ctx, err)
 		return nil, errors.Join(models.ErrGeneric, err)
 	}
 	if info.Inventory, err = acc.shop.ListPurchases(ctx, user); err != nil {
+		logger.AddError(ctx, err)
 		return nil, errors.Join(models.ErrGeneric, err)
 	}
 	if info.Transfers.Received, err = acc.p2p.ListReceived(ctx, user); err != nil {
+		logger.AddError(ctx, err)
 		return nil, errors.Join(models.ErrGeneric, err)
 	}
 	if info.Transfers.Sent, err = acc.p2p.ListSent(ctx, user); err != nil {
+		logger.AddError(ctx, err)
 		return nil, errors.Join(models.ErrGeneric, err)
 	}
 	return info, nil

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cxbelka/winter_2025/internal/logger"
 	"github.com/cxbelka/winter_2025/internal/models"
 )
 
@@ -14,6 +15,8 @@ func (h *handle) handleAuth(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
+
+	logger.AddField(r.Context(), "login", rq.Username)
 
 	var rb any
 	resp, err := h.auth.Authorize(r.Context(), rq)

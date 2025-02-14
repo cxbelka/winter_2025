@@ -6,6 +6,7 @@ import (
 
 	"github.com/cxbelka/winter_2025/internal/models"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type p2p struct {
@@ -25,6 +26,13 @@ func (p *p2p) Transfer(ctx context.Context, from string, to string, amount int) 
 		INSERT INTO merch_shop.transfers (src,dst,sum) VALUES ($1, $2, $3)
 		`, from, to, amount)
 	if err != nil {
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerr.ConstraintName == "positive_balance" {
+				return errors.Join(models.ErrNoMoney, err)
+			}
+		}
+
 		return errors.Join(models.ErrGeneric, err)
 	}
 	return nil

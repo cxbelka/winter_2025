@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/cxbelka/winter_2025/internal/logger"
 	"github.com/cxbelka/winter_2025/internal/models"
 	"github.com/cxbelka/winter_2025/internal/token"
 )
@@ -11,6 +12,7 @@ import (
 func (h *handle) handleBuy(w http.ResponseWriter, r *http.Request) {
 	item := r.PathValue("item")
 	user := token.UserFromContext(r.Context())
+	logger.AddField(r.Context(), "item", item)
 
 	if err := h.acc.Buy(r.Context(), user, item); err != nil {
 		handleError(w, err)
@@ -24,6 +26,7 @@ func (h *handle) handleTransfer(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
+	logger.AddField(r.Context(), "to", rq.To)
 	if err := h.acc.Transfer(r.Context(), from, rq.To, rq.Amount); err != nil {
 		handleError(w, err)
 	}
