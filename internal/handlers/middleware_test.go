@@ -1,13 +1,16 @@
 package handlers
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/cxbelka/winter_2025/internal/logger"
 	"github.com/cxbelka/winter_2025/internal/token"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )
 
@@ -70,6 +73,54 @@ func Test_authMdw(t *testing.T) {
 
 			require.Equal(t, tc.respBody, strings.Trim(resp.Body.String(), "\n"))
 			require.Equal(t, tc.respCode, resp.Code)
+		})
+	}
+
+}
+func Test_logMdw(t *testing.T) {
+	testCases := map[string]struct {
+		handler http.HandlerFunc
+		log     []string
+	}{
+		"no_error": {
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				w.Write([]byte(token.UserFromContext(r.Context())))
+			},
+			log: []string{`"code":200`, `"level":"info"`},
+		},
+		"error": {
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusInternalServerError)
+			},
+			log: []string{`"code":500`, `"level":"error"`},
+		},
+		"fields": {
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusInternalServerError)
+				logger.AddField(r.Context(), "key", "value")
+			},
+			log: []string{`"level":"error"`, `"key":"value"`},
+		},
+	}
+
+	for name, tc := range testCases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			buf := bytes.NewBuffer([]byte{})
+			lg := zerolog.New(buf)
+			h := &handle{lg: &lg}
+
+			resp := httptest.NewRecorder()
+			rq, err := http.NewRequest(http.MethodGet, `url`, nil)
+			require.NoError(t, err)
+
+			f := h.loggerMiddleware(tc.handler)
+			f(resp, rq)
+
+			for i := range tc.log {
+				require.Equal(t, true, strings.Contains(buf.String(), tc.log[i]))
+			}
+
 		})
 	}
 
