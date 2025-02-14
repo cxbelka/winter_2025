@@ -7,9 +7,12 @@ import (
 	"net/http"
 
 	"github.com/cxbelka/winter_2025/internal/models"
+	"github.com/rs/zerolog"
 )
 
 type handle struct {
+	lg *zerolog.Logger
+
 	auth authUsecase
 	acc  accountantUsecase
 }
@@ -23,14 +26,14 @@ type accountantUsecase interface {
 	Info(ctx context.Context, user string) (*models.InfoResponse, error)
 }
 
-func New(auth authUsecase, acc accountantUsecase) *http.ServeMux {
+func New(lg *zerolog.Logger, auth authUsecase, acc accountantUsecase) *http.ServeMux {
 	mx := http.NewServeMux()
-	h := &handle{auth: auth, acc: acc}
+	h := &handle{lg: lg, auth: auth, acc: acc}
 
-	mx.HandleFunc("POST /api/auth", h.handleAuth)
-	mx.HandleFunc("GET /api/info", h.authMiddleware(h.handleInfo))
-	mx.HandleFunc("POST /api/sendCoin", h.authMiddleware(h.handleTransfer))
-	mx.HandleFunc("GET /api/buy/{item}", h.authMiddleware(h.handleBuy)) // запрос на изменение данных лучше оформлять как POST, но ТЗ требует GET
+	mx.HandleFunc("POST /api/auth", h.loggerMiddleware(h.handleAuth))
+	mx.HandleFunc("GET /api/info", h.loggerMiddleware(h.authMiddleware(h.handleInfo)))
+	mx.HandleFunc("POST /api/sendCoin", h.loggerMiddleware(h.authMiddleware(h.handleTransfer)))
+	mx.HandleFunc("GET /api/buy/{item}", h.loggerMiddleware(h.authMiddleware(h.handleBuy))) // запрос на изменение данных лучше оформлять как POST, но ТЗ требует GET
 
 	return mx
 }

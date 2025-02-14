@@ -1,6 +1,8 @@
 package config
 
 type Config struct {
+	LogLevel string `envconfig:"LOG_LEVEL"`
+
 	DB   *DBcfg   `envconfig:"DATABASE"`
 	HTTP *HTTPcfg `envconfig:"SERVER"`
 }

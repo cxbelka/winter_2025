@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog"
 
 	"github.com/cxbelka/winter_2025/internal/config"
 	"github.com/cxbelka/winter_2025/internal/handlers"
@@ -22,6 +23,7 @@ type app struct {
 	ctx        context.Context
 	cancelFunc context.CancelFunc
 	wg         *sync.WaitGroup
+	lg         zerolog.Logger
 
 	cfg *config.Config
 
@@ -40,6 +42,14 @@ func New() (*app, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	logLevel, err := zerolog.ParseLevel(a.cfg.LogLevel)
+	if err != nil {
+		logLevel = zerolog.InfoLevel
+	}
+	zerolog.SetGlobalLevel(logLevel)
+	a.lg = zerolog.New(os.Stdout)
+
 	// поднять подключение к БД
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", a.cfg.DB.User, a.cfg.DB.Pass, a.cfg.DB.Host, a.cfg.DB.Port, a.cfg.DB.DBName)
 	a.dbConn, err = pgx.Connect(context.Background(), dsn)
@@ -53,6 +63,7 @@ func New() (*app, error) {
 
 	// создать слой usecase и транспорта вложенными вызовами
 	a.mux = handlers.New(
+		&a.lg,
 		usecase.NewAuth(repo.NewAuth(a.dbConn)),
 		usecase.NewAccountant(
 			repo.NewBalance(a.dbConn),
