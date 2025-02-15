@@ -53,3 +53,5 @@ issues:
   fix: false
   uniq-by-line: true
   whole-files: false
+  exclude-dirs:
+    - tests/load

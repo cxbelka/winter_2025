@@ -59,7 +59,6 @@ func New() (*app, error) { //nolint:revive
 		a.cfg.DB.DBName)
 
 	a.dbConn, err = pgxpool.New(context.Background(), dsn)
-	//a.dbConn, err = pgx.Connect(context.Background(), dsn)
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
