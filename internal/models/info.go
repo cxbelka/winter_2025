@@ -21,6 +21,6 @@ type ReceivedTransfer struct {
 }
 
 type SentTransfer struct {
-	To     string `json:"toUser"`
-	Amount int    `json:"amount"`
+	To     string `json:"toUser" validate:"required,alphanum"`
+	Amount int    `json:"amount" validate:"required,gt=0"`
 }

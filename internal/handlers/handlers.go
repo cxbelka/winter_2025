@@ -6,6 +6,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 
 	"github.com/cxbelka/winter_2025/internal/models"
@@ -14,8 +15,9 @@ import (
 type handle struct {
 	lg *zerolog.Logger
 
-	auth authUsecase
-	acc  accountantUsecase
+	auth     authUsecase
+	acc      accountantUsecase
+	validate *validator.Validate
 }
 
 type authUsecase interface {
@@ -30,6 +32,7 @@ type accountantUsecase interface {
 func New(lg *zerolog.Logger, auth authUsecase, acc accountantUsecase) *http.ServeMux {
 	mx := http.NewServeMux()
 	h := &handle{lg: lg, auth: auth, acc: acc}
+	h.validate = validator.New()
 
 	mx.HandleFunc("POST /api/auth", h.loggerMiddleware(h.handleAuth))
 	mx.HandleFunc("GET /api/info", h.loggerMiddleware(h.authMiddleware(h.handleInfo)))

@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS merch_shop;
 CREATE TABLE IF NOT EXISTS merch_shop.auth (
     login text PRIMARY KEY,
     password bytea NOT NULL,
-    balance integer CONSTRAINT positive_balance CHECK (balance >= 0),
+    balance integer CONSTRAINT positive_balance CHECK (balance >= 0) NOT NULL,
     created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at timestamp DEFAULT NULL
 );
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS merch_shop.transfers (
     dt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     src text  REFERENCES merch_shop.auth (login),
     dst text  REFERENCES merch_shop.auth (login),
-    sum integer CONSTRAINT positive_sum CHECK (sum > 0)
+    sum integer CONSTRAINT positive_sum CHECK (sum > 0) NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_merch_shop_transfers_from
     ON merch_shop.transfers USING hash (src);

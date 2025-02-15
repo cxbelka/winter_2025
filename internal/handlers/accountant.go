@@ -11,6 +11,7 @@ import (
 
 func (h *handle) handleBuy(w http.ResponseWriter, r *http.Request) {
 	item := r.PathValue("item")
+
 	user := token.UserFromContext(r.Context())
 	logger.AddField(r.Context(), "item", item)
 
@@ -28,6 +29,19 @@ func (h *handle) handleTransfer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.AddField(r.Context(), "to", rq.To)
+
+	err := h.validate.Struct(rq)
+	if err != nil {
+		handleError(r.Context(), w, err)
+
+		return
+	}
+
+	if from == rq.To {
+		handleError(r.Context(), w, models.ErrNoRows)
+
+		return
+	}
 	if err := h.acc.Transfer(r.Context(), from, rq.To, rq.Amount); err != nil {
 		handleError(r.Context(), w, err)
 	}

@@ -15,7 +15,12 @@ func (h *handle) handleAuth(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+	err := h.validate.Struct(rq)
+	if err != nil {
+		handleError(r.Context(), w, err)
 
+		return
+	}
 	logger.AddField(r.Context(), "login", rq.Username)
 
 	resp, err := h.auth.Authorize(r.Context(), rq)

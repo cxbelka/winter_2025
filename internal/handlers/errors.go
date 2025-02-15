@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
+
 	"github.com/cxbelka/winter_2025/internal/logger"
 	"github.com/cxbelka/winter_2025/internal/models"
 )
@@ -16,15 +18,20 @@ type handlerError struct {
 }
 
 var (
-	errGeneric       = handlerError{code: http.StatusInternalServerError, Status: "Internal server error"}
-	errUnauthorized  = handlerError{code: http.StatusUnauthorized, Status: "Unauthorized"}
-	errBadRequest    = handlerError{code: http.StatusBadRequest, Status: "Bad request"}
-	errNoEnoughMoney = handlerError{code: http.StatusBadRequest, Status: "Not enough coins"}
+	errInvalidRequest = handlerError{code: http.StatusBadRequest, Status: "Bad request"}
+	errGeneric        = handlerError{code: http.StatusInternalServerError, Status: "Internal server error"}
+	errUnauthorized   = handlerError{code: http.StatusUnauthorized, Status: "Unauthorized"}
+	errBadRequest     = handlerError{code: http.StatusBadRequest, Status: "Bad request"}
+	errNoEnoughMoney  = handlerError{code: http.StatusBadRequest, Status: "Not enough coins"}
 )
 
 func handleError(ctx context.Context, w http.ResponseWriter, err error) {
+	logger.AddError(ctx, err)
+
 	var e handlerError
 	switch {
+	case errors.As(err, &validator.ValidationErrors{}):
+		e = errInvalidRequest
 	case errors.Is(err, models.ErrNoMoney):
 		e = errNoEnoughMoney
 	case errors.Is(err, models.ErrGeneric):
