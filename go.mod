@@ -12,6 +12,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.35.0
 	go.uber.org/mock v0.5.0
+	gonum.org/v1/gonum v0.15.1
 )
 
 require (

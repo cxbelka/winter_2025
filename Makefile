@@ -22,3 +22,11 @@ lint:
 		-w /app \
 		golangci/golangci-lint:v1.64.5-alpine \
 		golangci-lint run
+
+load:
+	@docker-compose down
+	@docker-compose up -d
+	@echo sleep...
+	@sleep 5
+	@echo start
+	@go run tests/load/load.go

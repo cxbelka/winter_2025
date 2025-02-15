@@ -90,7 +90,7 @@ func (a *app) Run() error {
 	srv := http.Server{
 		Addr:              fmt.Sprintf(":%d", a.cfg.HTTP.Port),
 		Handler:           a.mux,
-		ReadHeaderTimeout: 10 * time.Millisecond, //nolint:mnd
+		ReadHeaderTimeout: time.Second, //nolint:mnd
 	}
 	errCh := make(chan error)
 	a.wg.Add(1)
