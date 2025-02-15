@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/cxbelka/winter_2025/internal/models"
 )
 
 type shop struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewShop(db *pgx.Conn) *shop { //nolint:revive
+func NewShop(db *pgxpool.Pool) *shop { //nolint:revive
 	return &shop{db: db}
 }
 

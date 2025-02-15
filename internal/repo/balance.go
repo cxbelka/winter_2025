@@ -5,15 +5,16 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/cxbelka/winter_2025/internal/models"
 )
 
 type balance struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewBalance(db *pgx.Conn) *balance { //nolint:revive
+func NewBalance(db *pgxpool.Pool) *balance { //nolint:revive
 	return &balance{db: db}
 }
 

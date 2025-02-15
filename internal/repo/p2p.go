@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/cxbelka/winter_2025/internal/models"
 )
 
 type p2p struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewP2p(db *pgx.Conn) *p2p { //nolint:revive
+func NewP2p(db *pgxpool.Pool) *p2p { //nolint:revive
 	return &p2p{db: db}
 }
 

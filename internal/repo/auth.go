@@ -5,15 +5,16 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/cxbelka/winter_2025/internal/models"
 )
 
 type auth struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewAuth(db *pgx.Conn) *auth { //nolint:revive
+func NewAuth(db *pgxpool.Pool) *auth { //nolint:revive
 	return &auth{db: db}
 }
 

@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 
 	"github.com/cxbelka/winter_2025/internal/config"
@@ -29,7 +29,7 @@ type app struct {
 
 	cfg *config.Config
 
-	dbConn *pgx.Conn
+	dbConn *pgxpool.Pool
 	mux    *http.ServeMux
 }
 
@@ -58,7 +58,8 @@ func New() (*app, error) { //nolint:revive
 		net.JoinHostPort(a.cfg.DB.Host, strconv.Itoa(a.cfg.DB.Port)),
 		a.cfg.DB.DBName)
 
-	a.dbConn, err = pgx.Connect(context.Background(), dsn)
+	a.dbConn, err = pgxpool.New(context.Background(), dsn)
+	//a.dbConn, err = pgx.Connect(context.Background(), dsn)
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
@@ -111,7 +112,7 @@ func (a *app) Run() error {
 		a.wg.Wait()
 
 		// close all
-		errCh <- a.dbConn.Close(shutdownCtx)
+		a.dbConn.Close()
 		close(errCh)
 	}()
 
