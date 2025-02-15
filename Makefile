@@ -30,3 +30,9 @@ load:
 	@sleep 5
 	@echo start
 	@go run tests/load/load.go
+
+run:
+	@docker-compose up -d
+
+stop:
+	@docker-compose down
