@@ -1,0 +1,55 @@
+linters:
+  enable-all: true
+  disable:
+    - tenv
+    - containedctx
+    - depguard
+    - exhaustruct
+    - gochecknoglobals
+    - gochecknoinits
+    - varnamelen
+    - wsl
+
+run:
+  timeout: 5m
+  tests: false
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  go: '1.23'
+  concurrency: 8
+
+linters-settings:
+  gci:
+    sections:
+      - standard # Standard section: captures all standard packages.
+      - default # Default section: contains all imports that could not be matched to another section type.
+      - localmodule # Local module section: contains all local packages. This section is not present unless explicitly enabled.      
+  nolintlint:
+    allow-unused: true
+    require-explanation: false
+    require-specific: true
+    
+severity:
+  default-severity: error
+  case-sensitive: true
+
+output:
+  print-issued-lines: true
+  print-linter-name: true
+  show-stats: false
+  sort-results: true
+  sort-order:
+    - linter
+    - file
+
+issues:
+  exclude-use-default: true
+  exclude-case-sensitive: false
+  exclude-dirs-use-default: true
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+  fix: false
+  uniq-by-line: true
+  whole-files: false

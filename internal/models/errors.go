@@ -2,7 +2,7 @@ package models
 
 import "errors"
 
-// internal errors
+// internal errors.
 var (
 	ErrGeneric         = errors.New("generic error")
 	ErrNoRows          = errors.New("no data")

@@ -22,20 +22,22 @@ type authRepo interface {
 	CreateUser(ctx context.Context, login string, pass string) error
 }
 
-func NewAuth(repo authRepo) *auth {
+func NewAuth(repo authRepo) *auth { //nolint:revive
 	return &auth{repo: repo}
 }
 
-func (a *auth) Authorize(ctx context.Context, rq *models.AuthReqest) (resp *models.AuthResponse, err error) {
+func (a *auth) Authorize(ctx context.Context, rq *models.AuthReqest) (*models.AuthResponse, error) {
 	passHash, err := a.repo.CheckLogin(ctx, rq.Username)
 	if err != nil && !errors.Is(err, models.ErrNoRows) {
 		logger.AddError(ctx, err)
-		return nil, err
+
+		return nil, err //nolint:wrapcheck
 	}
 	if errors.Is(err, models.ErrNoRows) {
 		if err := a.repo.CreateUser(ctx, rq.Username, rq.Password); err != nil {
 			logger.AddError(ctx, err)
-			return nil, err
+
+			return nil, err //nolint:wrapcheck
 		}
 	} else {
 		hash := sha512.New()
@@ -43,10 +45,11 @@ func (a *auth) Authorize(ctx context.Context, rq *models.AuthReqest) (resp *mode
 
 		if !slices.Equal(passHash, hash.Sum(nil)) {
 			logger.AddError(ctx, models.ErrInvalidPassword)
+
 			return nil, models.ErrInvalidPassword
 		}
 	}
-	resp = &models.AuthResponse{}
+	resp := &models.AuthResponse{}
 	resp.Token, err = token.Create(rq.Username)
 	if err != nil {
 		logger.AddError(ctx, err)

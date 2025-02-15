@@ -4,16 +4,17 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cxbelka/winter_2025/internal/models"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/cxbelka/winter_2025/internal/models"
 )
 
 type shop struct {
 	db *pgx.Conn
 }
 
-func NewShop(db *pgx.Conn) *shop {
+func NewShop(db *pgx.Conn) *shop { //nolint:revive
 	return &shop{db: db}
 }
 
@@ -34,10 +35,11 @@ func (s *shop) BuyItem(ctx context.Context, buyer string, item string) error {
 			if pgerr.ConstraintName == "positive_balance" {
 				return errors.Join(models.ErrNoMoney, err)
 			}
-
 		}
+
 		return errors.Join(models.ErrGeneric, err)
 	}
+
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -16,17 +17,18 @@ func (h *handle) authMiddleware(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// достать header, раскодировать, проверить
 		tokn := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		if name, err := token.Check(tokn); err != nil {
-
+		name, err := token.Check(tokn)
+		if err != nil {
 			logger.AddError(r.Context(), err)
 
-			handleError(w, models.ErrInvalidPassword)
-			return
-		} else {
-			logger.AddField(r.Context(), "user", name)
+			handleError(r.Context(), w, models.ErrInvalidPassword)
 
-			r = r.WithContext(token.ContextWithUser(r.Context(), name))
+			return
 		}
+
+		logger.AddField(r.Context(), "user", name)
+
+		r = r.WithContext(token.ContextWithUser(r.Context(), name))
 
 		f(w, r)
 	}
@@ -44,7 +46,7 @@ func (w *wrapper) WriteHeader(statusCode int) {
 
 func (h *handle) loggerMiddleware(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		w.Header().Add("Content-Type", "application/json")
 		wrap := &wrapper{ResponseWriter: w, ResponStatus: http.StatusOK}
 
 		lctx := h.lg.With().
@@ -52,22 +54,22 @@ func (h *handle) loggerMiddleware(f http.HandlerFunc) http.HandlerFunc {
 			Str("path", r.URL.String()).
 			Str("id", uuid.NewString())
 
-		defer func() {
+		defer func(ctx context.Context) {
 			if e := recover(); e != nil {
 				l := lctx.Logger()
 				(&l).Error().Any("panic", e).Send()
 
-				handleError(w, models.ErrGeneric)
+				handleError(ctx, w, models.ErrGeneric)
 			}
-		}()
+		}(r.Context())
 
 		ctx := lctx.Logger().WithContext(r.Context())
 		f(wrap, r.WithContext(ctx))
 
-		evt := zerolog.Ctx(ctx).Info()
+		evt := zerolog.Ctx(ctx).Info
 		if wrap.ResponStatus != http.StatusOK {
-			evt = zerolog.Ctx(ctx).Error()
+			evt = zerolog.Ctx(ctx).Error
 		}
-		evt.Int("code", wrap.ResponStatus).Send()
+		evt().Int("code", wrap.ResponStatus).Send()
 	}
 }

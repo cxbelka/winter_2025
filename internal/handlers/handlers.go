@@ -6,8 +6,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/cxbelka/winter_2025/internal/models"
 	"github.com/rs/zerolog"
+
+	"github.com/cxbelka/winter_2025/internal/models"
 )
 
 type handle struct {
@@ -33,7 +34,8 @@ func New(lg *zerolog.Logger, auth authUsecase, acc accountantUsecase) *http.Serv
 	mx.HandleFunc("POST /api/auth", h.loggerMiddleware(h.handleAuth))
 	mx.HandleFunc("GET /api/info", h.loggerMiddleware(h.authMiddleware(h.handleInfo)))
 	mx.HandleFunc("POST /api/sendCoin", h.loggerMiddleware(h.authMiddleware(h.handleTransfer)))
-	mx.HandleFunc("GET /api/buy/{item}", h.loggerMiddleware(h.authMiddleware(h.handleBuy))) // запрос на изменение данных лучше оформлять как POST, но ТЗ требует GET
+	// запрос на изменение данных лучше оформлять как POST, но ТЗ требует GET.
+	mx.HandleFunc("GET /api/buy/{item}", h.loggerMiddleware(h.authMiddleware(h.handleBuy)))
 
 	return mx
 }

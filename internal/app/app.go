@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"time"
 
@@ -31,7 +33,7 @@ type app struct {
 	mux    *http.ServeMux
 }
 
-func New() (*app, error) {
+func New() (*app, error) { //nolint:revive
 	var err error
 	a := &app{wg: &sync.WaitGroup{}}
 
@@ -40,7 +42,7 @@ func New() (*app, error) {
 
 	a.cfg, err = config.New()
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	logLevel, err := zerolog.ParseLevel(a.cfg.LogLevel)
@@ -51,14 +53,18 @@ func New() (*app, error) {
 	a.lg = zerolog.New(os.Stdout)
 
 	// поднять подключение к БД
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", a.cfg.DB.User, a.cfg.DB.Pass, a.cfg.DB.Host, a.cfg.DB.Port, a.cfg.DB.DBName)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s",
+		a.cfg.DB.User, a.cfg.DB.Pass,
+		net.JoinHostPort(a.cfg.DB.Host, strconv.Itoa(a.cfg.DB.Port)),
+		a.cfg.DB.DBName)
+
 	a.dbConn, err = pgx.Connect(context.Background(), dsn)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 	// и пингануть для проверки
 	if err = a.dbConn.Ping(context.Background()); err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	// создать слой usecase и транспорта вложенными вызовами
@@ -81,8 +87,9 @@ func (a *app) Run() error {
 	var err error
 	// start all
 	srv := http.Server{
-		Addr:    fmt.Sprintf(":%d", a.cfg.HTTP.Port),
-		Handler: a.mux,
+		Addr:              fmt.Sprintf(":%d", a.cfg.HTTP.Port),
+		Handler:           a.mux,
+		ReadHeaderTimeout: 10 * time.Millisecond, //nolint:mnd
 	}
 	errCh := make(chan error)
 	a.wg.Add(1)
@@ -96,7 +103,8 @@ func (a *app) Run() error {
 	go func() {
 		<-a.ctx.Done()
 
-		shutdownCtx, scf := context.WithTimeout(context.Background(), 10*time.Second)
+		// кубер по дефолту гасит через 15 секунд после sigint
+		shutdownCtx, scf := context.WithTimeout(context.Background(), 10*time.Second) //nolint:mnd
 		defer scf()
 
 		errCh <- srv.Shutdown(shutdownCtx)

@@ -4,7 +4,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-// NewConfig generates new app configuration for type, given by generics
+// NewConfig generates new app configuration for type, given by generics.
 func New(prefix ...string) (*Config, error) {
 	var v Config
 	p := ""
@@ -13,7 +13,7 @@ func New(prefix ...string) (*Config, error) {
 	}
 
 	if err := envconfig.Process(p, &v); err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	return &v, nil

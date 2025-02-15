@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
+	"github.com/cxbelka/winter_2025/internal/logger"
 	"github.com/cxbelka/winter_2025/internal/models"
 )
 
@@ -21,7 +22,7 @@ var (
 	errNoEnoughMoney = handlerError{code: http.StatusBadRequest, Status: "Not enough coins"}
 )
 
-func handleError(w http.ResponseWriter, err error) {
+func handleError(ctx context.Context, w http.ResponseWriter, err error) {
 	var e handlerError
 	switch {
 	case errors.Is(err, models.ErrNoMoney):
@@ -39,7 +40,6 @@ func handleError(w http.ResponseWriter, err error) {
 
 	w.WriteHeader(e.code)
 	if err = json.NewEncoder(w).Encode(e); err != nil {
-		fmt.Printf("%+v\n", err)
+		logger.AddError(ctx, err)
 	}
-
 }

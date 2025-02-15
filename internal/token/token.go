@@ -8,6 +8,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+const (
+	defaultTokenTTL = 10 * time.Minute
+)
+
 var (
 	jwtCfg *JWT
 
@@ -29,9 +33,8 @@ func Reinit() {
 	jwtCfg.secret = os.Getenv("JWT_SECRET")
 	jwtCfg.ttl, err = time.ParseDuration(os.Getenv("JWT_TTL"))
 	if err != nil {
-		jwtCfg.ttl = 10 * time.Minute
+		jwtCfg.ttl = defaultTokenTTL
 	}
-
 }
 
 func Create(user string) (string, error) {
@@ -42,16 +45,18 @@ func Create(user string) (string, error) {
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(jwtCfg.ttl)),
 	}
 
-	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(jwtCfg.secret))
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(jwtCfg.secret)) //nolint:wrapcheck
 }
 
 func Check(token string) (string, error) {
 	claims := jwt.RegisteredClaims{}
-	_, err := jwt.ParseWithClaims(token, &claims, func(t *jwt.Token) (interface{}, error) { return []byte(jwtCfg.secret), nil }, jwt.WithExpirationRequired())
-	if err != nil {
-		return "", err
-	}
-	return claims.Subject, nil
+	_, err := jwt.ParseWithClaims(
+		token, &claims,
+		func(_ *jwt.Token) (interface{}, error) { return []byte(jwtCfg.secret), nil },
+		jwt.WithExpirationRequired(),
+	)
+
+	return claims.Subject, err //nolint:wrapcheck
 }
 
 func ContextWithUser(ctx context.Context, user string) context.Context {
@@ -63,5 +68,6 @@ func UserFromContext(ctx context.Context) string {
 	if !ok {
 		return ""
 	}
+
 	return v
 }

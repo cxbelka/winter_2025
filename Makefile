@@ -13,3 +13,12 @@ test:
 	@grep -v "_mocks.go" test.out > test.f.out
 	@mv test.f.out test.out 
 	@go tool cover -func test.out 
+
+
+# docker pull golangci/golangci-lint:v1.64.5-alpine
+lint:
+	@docker run --rm --name linter \
+		-v $(shell pwd):/app \
+		-w /app \
+		golangci/golangci-lint:v1.64.5-alpine \
+		golangci-lint run

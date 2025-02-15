@@ -4,21 +4,21 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cxbelka/winter_2025/internal/models"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/cxbelka/winter_2025/internal/models"
 )
 
 type p2p struct {
 	db *pgx.Conn
 }
 
-func NewP2p(db *pgx.Conn) *p2p {
+func NewP2p(db *pgx.Conn) *p2p { //nolint:revive
 	return &p2p{db: db}
 }
 
 func (p *p2p) Transfer(ctx context.Context, from string, to string, amount int) error {
-
 	_, err := p.db.Exec(ctx, `
 		WITH 
 			ftx AS (UPDATE merch_shop.auth SET balance = balance-$3 WHERE login=$1),
@@ -35,6 +35,7 @@ func (p *p2p) Transfer(ctx context.Context, from string, to string, amount int) 
 
 		return errors.Join(models.ErrGeneric, err)
 	}
+
 	return nil
 }
 
@@ -58,8 +59,12 @@ func (p *p2p) ListReceived(ctx context.Context, user string) ([]models.ReceivedT
 		}
 		resive = append(resive, v)
 	}
+	err = rows.Err()
+	if err != nil {
+		return nil, errors.Join(models.ErrGeneric, err)
+	}
 
-	return resive, rows.Err()
+	return resive, nil
 }
 
 func (p *p2p) ListSent(ctx context.Context, user string) ([]models.SentTransfer, error) {

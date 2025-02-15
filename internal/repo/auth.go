@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cxbelka/winter_2025/internal/models"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/cxbelka/winter_2025/internal/models"
 )
 
 type auth struct {
 	db *pgx.Conn
 }
 
-func NewAuth(db *pgx.Conn) *auth {
+func NewAuth(db *pgx.Conn) *auth { //nolint:revive
 	return &auth{db: db}
 }
 
@@ -23,15 +24,20 @@ func (a *auth) CheckLogin(ctx context.Context, login string) ([]byte, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, models.ErrNoRows
 		}
+
 		return nil, errors.Join(models.ErrGeneric, err)
 	}
+
 	return passwd, nil
 }
 
 func (a *auth) CreateUser(ctx context.Context, login string, pass string) error {
-	_, err := a.db.Exec(ctx, `INSERT INTO merch_shop.auth (login, password, balance) VALUES ($1, SHA512($2), 1000)`, login, pass)
+	_, err := a.db.Exec(ctx,
+		`INSERT INTO merch_shop.auth (login, password, balance) VALUES ($1, SHA512($2), 1000)`,
+		login, pass)
 	if err != nil {
 		return errors.Join(models.ErrGeneric, err)
 	}
+
 	return nil
 }
